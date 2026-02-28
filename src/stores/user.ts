@@ -30,13 +30,14 @@ export const useUserStore = defineStore('user', () => {
   const gachaHistory = ref<GachaResult[]>([])
   const redeemedCodes = ref<Record<string, number>>({}) // 已兑换的兑换码及次数
   const pityCounter = ref<number>(0) // 保底计数器（记录未中神话的抽数）
+  const lifetimeSpins = ref<number>(0) // 历史总抽奖次数（永久累积）
 
   // 计算属性
   const maxSpins = computed(() => 60)
   const hasSpinsRemaining = computed(() => spinsRemaining.value > 0)
 
   // 统计信息
-  const totalSpins = computed(() => maxSpins.value - spinsRemaining.value)
+  const totalSpins = computed(() => lifetimeSpins.value) // 使用历史总次数
   
   // 计算总价值（基于物品价格）
   const totalValue = computed(() => {
@@ -63,7 +64,7 @@ export const useUserStore = defineStore('user', () => {
     return Math.round(totalValue.value / totalSpins.value)
   })
   
-  // 评价（12 个等级）- 基于保底机制优化
+  // 评价（12 个等级）- 宽松版本（降低要求）
   const gachaRating = computed(() => {
     if (totalSpins.value === 0) return { title: '未抽奖', emoji: '🎲', color: 'text-gray-400' }
     
@@ -76,17 +77,20 @@ export const useUserStore = defineStore('user', () => {
     const expectedMythics = Math.floor(totalSpins.value / 100) // 每 100 抽保底一个神话
     const pityEfficiency = expectedMythics > 0 ? mythicCount / expectedMythics : mythicCount
     
-    // 12 个评价等级 - 综合考虑欧气值和保底效率
-    if (luckRatio >= 0.5 && pityEfficiency >= 3) return { title: '鸿蒙欧帝', emoji: '🌌', color: 'text-red-500' }
-    if (luckRatio >= 0.4 && pityEfficiency >= 2.5) return { title: '太乙欧圣', emoji: '☯️', color: 'text-purple-400' }
-    if (luckRatio >= 0.35 && pityEfficiency >= 2) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
-    if (luckRatio >= 0.3 && pityEfficiency >= 1.8) return { title: '天命欧皇', emoji: '🐲', color: 'text-orange-400' }
-    if (luckRatio >= 0.25 && pityEfficiency >= 1.5) return { title: '欧皇', emoji: '✨', color: 'text-yellow-500' }
-    if (luckRatio >= 0.22 && pityEfficiency >= 1.3) return { title: '欧气满满', emoji: '🌟', color: 'text-green-400' }
-    if (luckRatio >= 0.2 && pityEfficiency >= 1.1) return { title: '小欧', emoji: '😊', color: 'text-blue-300' }
-    if (luckRatio >= 0.18) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
-    if (luckRatio >= 0.15) return { title: '小非', emoji: '😅', color: 'text-yellow-600' }
-    if (luckRatio >= 0.1) return { title: '非酋', emoji: '😭', color: 'text-orange-500' }
+    // 12 个评价等级 - 大幅降低要求
+    if (luckRatio >= 0.25 || pityEfficiency >= 2) return { title: '鸿蒙欧帝', emoji: '🌌', color: 'text-red-500' }
+    if (luckRatio >= 0.20 || pityEfficiency >= 1.5) return { title: '太乙欧圣', emoji: '☯️', color: 'text-purple-400' }
+    if (luckRatio >= 0.18 || pityEfficiency >= 1.3) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
+    if (luckRatio >= 0.16 || pityEfficiency >= 1.2) return { title: '天命欧皇', emoji: '🐲', color: 'text-orange-400' }
+    if (luckRatio >= 0.14 || pityEfficiency >= 1.1) return { title: '欧皇', emoji: '✨', color: 'text-yellow-500' }
+    if (luckRatio >= 0.12) return { title: '欧气满满', emoji: '🌟', color: 'text-green-400' }
+    if (luckRatio >= 0.10) return { title: '小欧', emoji: '😊', color: 'text-blue-300' }
+    if (luckRatio >= 0.08) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
+    if (luckRatio >= 0.06) return { title: '小非', emoji: '😅', color: 'text-yellow-600' }
+    if (luckRatio >= 0.04) return { title: '非酋', emoji: '😭', color: 'text-orange-500' }
+    if (luckRatio >= 0.02) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
+    return { title: '超级大非酋', emoji: '💀', color: 'text-red-600' }
+  })
     if (luckRatio >= 0.05) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
     return { title: '超级大非酋', emoji: '💀', color: 'text-red-600' }
   })
@@ -174,6 +178,9 @@ export const useUserStore = defineStore('user', () => {
 
     // 减少抽奖次数
     spinsRemaining.value--
+    
+    // 增加历史总抽奖次数
+    lifetimeSpins.value++
 
     // 1. 抽取稀有度
     const rarity = rollRarity()
@@ -324,7 +331,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 重置状态
+  // 重置状态（不重置历史统计）
   function reset() {
     spinsRemaining.value = 60
     prismaticStones.value = 0
@@ -332,6 +339,7 @@ export const useUserStore = defineStore('user', () => {
     gachaHistory.value = []
     redeemedCodes.value = {}
     pityCounter.value = 0 // 重置保底计数器
+    // lifetimeSpins.value 保持不变，不重置历史总次数
   }
 
   return {
@@ -342,6 +350,7 @@ export const useUserStore = defineStore('user', () => {
     gachaHistory,
     redeemedCodes,
     pityCounter, // 保底计数器
+    lifetimeSpins, // 历史总抽奖次数
     maxSpins,
     hasSpinsRemaining,
     

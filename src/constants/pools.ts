@@ -67,15 +67,15 @@ export const RARITY_CONFIG: Record<string, RarityConfig> = {
   }
 }
 
-// 概率配置 (总和 = 100%)
+// 概率配置 (总和 = 100%) - 提高爆率版本
 export const PROBABILITY_CONFIG: ProbabilityConfig[] = [
-  { rarity: 'Mythic', probability: 0.01 },
-  { rarity: 'Legendary', probability: 0.30 },
-  { rarity: 'Special', probability: 0.60 },
-  { rarity: 'Epic', probability: 5.00 },
-  { rarity: 'Rare', probability: 7.00 },
-  { rarity: 'Uncommon', probability: 14.40 },
-  { rarity: 'Common', probability: 72.69 }
+  { rarity: 'Mythic', probability: 0.50 },    // 0.01% → 0.50% (提高 50 倍)
+  { rarity: 'Legendary', probability: 1.00 }, // 0.30% → 1.00% (提高 3 倍)
+  { rarity: 'Special', probability: 2.00 },   // 0.60% → 2.00% (提高 3 倍)
+  { rarity: 'Epic', probability: 8.00 },      // 5.00% → 8.00% (提高 1.6 倍)
+  { rarity: 'Rare', probability: 12.00 },     // 7.00% → 12.00% (提高 1.7 倍)
+  { rarity: 'Uncommon', probability: 18.00 }, // 14.40% → 18.00%
+  { rarity: 'Common', probability: 58.50 }    // 72.69% → 58.50% (降低，给其他稀有度让位)
 ]
 
 // 卡池数据
