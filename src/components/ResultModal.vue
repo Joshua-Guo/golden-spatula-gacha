@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
+  spinTen: []
 }>()
 
 // 按稀有度排序（高的在前）
@@ -140,8 +141,18 @@ const stats = computed(() => {
             </div>
           </div>
 
-          <!-- 关闭按钮 -->
-          <div class="mt-6 flex justify-center">
+          <!-- 按钮组 -->
+          <div class="mt-6 flex justify-center gap-4">
+            <!-- 再来十连按钮（仅当抽奖次数 >= 10 时显示） -->
+            <button
+              v-if="results.length === 10"
+              @click="$emit('spinTen'); $emit('close')"
+              class="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-3 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-blue-500/50"
+            >
+              🎰 再来十连
+            </button>
+            
+            <!-- 确定按钮 -->
             <button
               @click="$emit('close')"
               class="rounded-xl bg-gradient-to-r from-yellow-600 to-yellow-500 px-8 py-3 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-yellow-500/50"

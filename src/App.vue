@@ -19,6 +19,7 @@ const showShopModal = ref(false)
 const showCDKeyModal = ref(false)
 const showStatsModal = ref(false)
 const currentResults = ref<GachaResult[]>([])
+const autoSpinTen = ref(false) // 自动十连标志
 
 // 当前选中的卡池
 const currentPool = computed(() => {
@@ -139,8 +140,10 @@ function showResult(results: GachaResult[]) {
       <div v-else>
         <GachaMachine
           :pool-id="selectedPoolId"
+          :auto-spin-ten="autoSpinTen"
           @back="selectedPoolId = null"
           @show-result="showResult"
+          @update:auto-spin-ten="autoSpinTen = $event"
         />
       </div>
     </main>
@@ -158,6 +161,7 @@ function showResult(results: GachaResult[]) {
       :results="currentResults"
       :show="showResultModal"
       @close="showResultModal = false"
+      @spin-ten="autoSpinTen = true"
     />
 
     <!-- 商店弹窗 -->

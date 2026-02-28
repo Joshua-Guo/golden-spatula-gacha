@@ -29,6 +29,7 @@ export const useUserStore = defineStore('user', () => {
   const inventory = ref<string[]>([]) // 已拥有的物品 ID
   const gachaHistory = ref<GachaResult[]>([])
   const redeemedCodes = ref<Record<string, number>>({}) // 已兑换的兑换码及次数
+  const pityCounter = ref<number>(0) // 保底计数器（记录未中神话的抽数）
 
   // 计算属性
   const maxSpins = computed(() => 60)
@@ -62,7 +63,7 @@ export const useUserStore = defineStore('user', () => {
     return Math.round(totalValue.value / totalSpins.value)
   })
   
-  // 评价
+  // 评价（12 个等级）- 基于保底机制优化
   const gachaRating = computed(() => {
     if (totalSpins.value === 0) return { title: '未抽奖', emoji: '🎲', color: 'text-gray-400' }
     
@@ -70,11 +71,24 @@ export const useUserStore = defineStore('user', () => {
     const theoreticalMax = totalSpins.value * 600 // 假设每次都抽到传说
     const luckRatio = totalValue.value / theoreticalMax
     
-    if (luckRatio > 0.5) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
-    if (luckRatio > 0.3) return { title: '欧皇', emoji: '✨', color: 'text-purple-400' }
-    if (luckRatio > 0.15) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
-    if (luckRatio > 0.05) return { title: '非酋', emoji: '😭', color: 'text-orange-400' }
-    return { title: '超级大非酋', emoji: '💀', color: 'text-red-400' }
+    // 计算保底效率（实际获得神话数 / 理论保底神话数）
+    const mythicCount = gachaHistory.value.filter(r => r.item.rarity === 'Mythic' && !r.isDuplicate).length
+    const expectedMythics = Math.floor(totalSpins.value / 100) // 每 100 抽保底一个神话
+    const pityEfficiency = expectedMythics > 0 ? mythicCount / expectedMythics : mythicCount
+    
+    // 12 个评价等级 - 综合考虑欧气值和保底效率
+    if (luckRatio >= 0.5 && pityEfficiency >= 3) return { title: '鸿蒙欧帝', emoji: '🌌', color: 'text-red-500' }
+    if (luckRatio >= 0.4 && pityEfficiency >= 2.5) return { title: '太乙欧圣', emoji: '☯️', color: 'text-purple-400' }
+    if (luckRatio >= 0.35 && pityEfficiency >= 2) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
+    if (luckRatio >= 0.3 && pityEfficiency >= 1.8) return { title: '天命欧皇', emoji: '🐲', color: 'text-orange-400' }
+    if (luckRatio >= 0.25 && pityEfficiency >= 1.5) return { title: '欧皇', emoji: '✨', color: 'text-yellow-500' }
+    if (luckRatio >= 0.22 && pityEfficiency >= 1.3) return { title: '欧气满满', emoji: '🌟', color: 'text-green-400' }
+    if (luckRatio >= 0.2 && pityEfficiency >= 1.1) return { title: '小欧', emoji: '😊', color: 'text-blue-300' }
+    if (luckRatio >= 0.18) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
+    if (luckRatio >= 0.15) return { title: '小非', emoji: '😅', color: 'text-yellow-600' }
+    if (luckRatio >= 0.1) return { title: '非酋', emoji: '😭', color: 'text-orange-500' }
+    if (luckRatio >= 0.05) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
+    return { title: '超级大非酋', emoji: '💀', color: 'text-red-600' }
   })
   
   // 最值钱的 Top 5
@@ -105,15 +119,30 @@ export const useUserStore = defineStore('user', () => {
     return Math.floor(Math.random() * (max - min + 1)) + min
   }
 
-  // 根据概率抽取稀有度
+  // 根据概率抽取稀有度（带保底机制）
   function rollRarity(): string {
+    pityCounter.value++
+    
+    // 保底机制：100 抽内必出神话
+    if (pityCounter.value >= 100) {
+      pityCounter.value = 0 // 重置保底
+      return 'Mythic'
+    }
+    
     const roll = Math.random() * 100 // 0-100
     
     let cumulative = 0
     for (const config of PROBABILITY_CONFIG) {
       cumulative += config.probability
       if (roll < cumulative) {
-        return config.rarity
+        const rarity = config.rarity
+        
+        // 如果中了神话，重置保底
+        if (rarity === 'Mythic') {
+          pityCounter.value = 0
+        }
+        
+        return rarity
       }
     }
     
@@ -302,6 +331,7 @@ export const useUserStore = defineStore('user', () => {
     inventory.value = []
     gachaHistory.value = []
     redeemedCodes.value = {}
+    pityCounter.value = 0 // 重置保底计数器
   }
 
   return {
@@ -311,6 +341,7 @@ export const useUserStore = defineStore('user', () => {
     inventory,
     gachaHistory,
     redeemedCodes,
+    pityCounter, // 保底计数器
     maxSpins,
     hasSpinsRemaining,
     

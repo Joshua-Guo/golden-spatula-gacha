@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useUserStore } from '../stores/user'
 import type { GachaResult } from '../types'
 import { RARITY_CONFIG } from '../constants/pools'
@@ -9,14 +9,28 @@ const userStore = useUserStore()
 
 const props = defineProps<{
   poolId: string
+  autoSpinTen?: boolean
 }>()
 
 const emit = defineEmits<{
   back: []
   showResult: [results: GachaResult[]]
+  'update:autoSpinTen': [value: boolean]
 }>()
 
 const isSpinning = ref(false)
+
+// 监听自动十连信号
+watch(() => props.autoSpinTen, async (newVal) => {
+  if (newVal && !isSpinning.value && userStore.hasSpinsRemaining) {
+    // 重置标志
+    emit('update:autoSpinTen', false)
+    // 延迟一点再抽
+    await new Promise(resolve => setTimeout(resolve, 500))
+    // 执行十连
+    await spinTen(true)
+  }
+})
 
 // 触发 confetti 特效
 function triggerConfetti(intensity: 'normal' | 'epic') {
@@ -89,7 +103,7 @@ async function spinOnce() {
 }
 
 // 十连抽
-async function spinTen() {
+async function spinTen(isAuto = false) {
   if (isSpinning.value || !userStore.hasSpinsRemaining) return
 
   isSpinning.value = true

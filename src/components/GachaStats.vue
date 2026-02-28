@@ -61,6 +61,39 @@ const ratingTitle = computed(() => userStore.gachaRating.title)
             </div>
           </div>
 
+          <!-- 保底进度 -->
+          <div class="mb-6 rounded-xl border-2 border-red-600/30 bg-gradient-to-r from-red-600/20 to-orange-600/20 p-4">
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-sm font-bold text-red-400">🎯 保底进度</span>
+              <span class="text-sm font-bold text-red-400">{{ userStore.pityCounter }} / 100</span>
+            </div>
+            <div class="overflow-hidden rounded-full bg-gray-700">
+              <div
+                class="h-4 bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
+                :style="{ width: `${userStore.pityCounter}%` }"
+              ></div>
+            </div>
+            <div class="mt-2 text-xs text-red-300">
+              {{ 100 - userStore.pityCounter }} 抽内必出神话
+            </div>
+          </div>
+
+          <!-- 神话统计 -->
+          <div class="mb-6 grid grid-cols-2 gap-3">
+            <div class="rounded-xl bg-red-600/20 p-4 text-center">
+              <div class="text-2xl font-bold text-red-400">
+                🐉 {{ userStore.gachaHistory.filter(r => r.item.rarity === 'Mythic' && !r.isDuplicate).length }}
+              </div>
+              <div class="text-xs text-red-300">神话 (新)</div>
+            </div>
+            <div class="rounded-xl bg-orange-600/20 p-4 text-center">
+              <div class="text-2xl font-bold text-orange-400">
+                💎 {{ userStore.gachaHistory.filter(r => r.item.rarity === 'Mythic' && r.isDuplicate).length }}
+              </div>
+              <div class="text-xs text-orange-300">神话 (重复)</div>
+            </div>
+          </div>
+
           <!-- 核心数据 -->
           <div class="mb-6 grid grid-cols-3 gap-3">
             <!-- 总抽奖数 -->
