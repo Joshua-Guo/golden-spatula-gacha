@@ -39,7 +39,7 @@ export const useUserStore = defineStore('user', () => {
   // 统计信息
   const totalSpins = computed(() => lifetimeSpins.value) // 使用历史总次数
   
-  // 计算总价值（基于物品价格）
+  // 计算总价值（基于物品价格，扣除保底影响）
   const totalValue = computed(() => {
     let value = 0
     gachaHistory.value.forEach(result => {
@@ -55,7 +55,17 @@ export const useUserStore = defineStore('user', () => {
         value += result.stonesObtained
       }
     })
-    return value
+    
+    // 扣除保底的神话价值，用数学期望填充
+    // 每 100 抽有 1 个保底神话，这不应该算作"运气"
+    const pityMythics = Math.floor(lifetimeSpins.value / 100)
+    const mythicPrice = 600
+    const expectedValuePerSpin = 16.87 // 数学期望值
+    
+    // 扣除保底神话的全价，替换为期望值
+    value = value - (pityMythics * mythicPrice) + (pityMythics * expectedValuePerSpin * 100)
+    
+    return Math.max(0, value) // 确保不为负数
   })
   
   // 平均价值
@@ -64,7 +74,7 @@ export const useUserStore = defineStore('user', () => {
     return Math.round(totalValue.value / totalSpins.value)
   })
   
-  // 评价（12 个等级）- 宽松版本（降低要求）
+  // 评价（12 个等级）- 基于数学期望优化（期望值 2.81% 对应普通人）
   const gachaRating = computed(() => {
     if (totalSpins.value === 0) return { title: '未抽奖', emoji: '🎲', color: 'text-gray-400' }
     
@@ -77,18 +87,18 @@ export const useUserStore = defineStore('user', () => {
     const expectedMythics = Math.floor(totalSpins.value / 100) // 每 100 抽保底一个神话
     const pityEfficiency = expectedMythics > 0 ? mythicCount / expectedMythics : mythicCount
     
-    // 12 个评价等级 - 大幅降低要求
-    if (luckRatio >= 0.25 || pityEfficiency >= 2) return { title: '鸿蒙欧帝', emoji: '🌌', color: 'text-red-500' }
-    if (luckRatio >= 0.20 || pityEfficiency >= 1.5) return { title: '太乙欧圣', emoji: '☯️', color: 'text-purple-400' }
-    if (luckRatio >= 0.18 || pityEfficiency >= 1.3) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
-    if (luckRatio >= 0.16 || pityEfficiency >= 1.2) return { title: '天命欧皇', emoji: '🐲', color: 'text-orange-400' }
-    if (luckRatio >= 0.14 || pityEfficiency >= 1.1) return { title: '欧皇', emoji: '✨', color: 'text-yellow-500' }
-    if (luckRatio >= 0.12) return { title: '欧气满满', emoji: '🌟', color: 'text-green-400' }
-    if (luckRatio >= 0.10) return { title: '小欧', emoji: '😊', color: 'text-blue-300' }
-    if (luckRatio >= 0.08) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
-    if (luckRatio >= 0.06) return { title: '小非', emoji: '😅', color: 'text-yellow-600' }
-    if (luckRatio >= 0.04) return { title: '非酋', emoji: '😭', color: 'text-orange-500' }
-    if (luckRatio >= 0.02) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
+    // 12 个评价等级 - 数学期望 2.81% 对应普通人
+    if (luckRatio >= 0.15 || pityEfficiency >= 3) return { title: '鸿蒙欧帝', emoji: '🌌', color: 'text-red-500' }
+    if (luckRatio >= 0.10 || pityEfficiency >= 2.5) return { title: '太乙欧圣', emoji: '☯️', color: 'text-purple-400' }
+    if (luckRatio >= 0.08 || pityEfficiency >= 2) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
+    if (luckRatio >= 0.06 || pityEfficiency >= 1.8) return { title: '天命欧皇', emoji: '🐲', color: 'text-orange-400' }
+    if (luckRatio >= 0.05 || pityEfficiency >= 1.5) return { title: '欧皇', emoji: '✨', color: 'text-yellow-500' }
+    if (luckRatio >= 0.045) return { title: '欧气满满', emoji: '🌟', color: 'text-green-400' }
+    if (luckRatio >= 0.04) return { title: '小欧', emoji: '😊', color: 'text-blue-300' }
+    if (luckRatio >= 0.025) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
+    if (luckRatio >= 0.02) return { title: '小非', emoji: '😅', color: 'text-yellow-600' }
+    if (luckRatio >= 0.015) return { title: '非酋', emoji: '😭', color: 'text-orange-500' }
+    if (luckRatio >= 0.01) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
     return { title: '超级大非酋', emoji: '💀', color: 'text-red-600' }
   })
   
