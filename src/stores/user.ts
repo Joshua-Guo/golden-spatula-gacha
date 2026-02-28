@@ -28,10 +28,73 @@ export const useUserStore = defineStore('user', () => {
   const prismaticStones = ref<number>(0)
   const inventory = ref<string[]>([]) // 已拥有的物品 ID
   const gachaHistory = ref<GachaResult[]>([])
+  const redeemedCodes = ref<Record<string, number>>({}) // 已兑换的兑换码及次数
 
   // 计算属性
   const maxSpins = computed(() => 60)
   const hasSpinsRemaining = computed(() => spinsRemaining.value > 0)
+
+  // 统计信息
+  const totalSpins = computed(() => maxSpins.value - spinsRemaining.value)
+  
+  // 计算总价值（基于物品价格）
+  const totalValue = computed(() => {
+    let value = 0
+    gachaHistory.value.forEach(result => {
+      if (result.item.rarity !== 'Common') {
+        const config = RARITY_CONFIG[result.item.rarity]
+        // 如果是新物品，算全价；如果是重复的，算石头价值
+        if (!result.isDuplicate) {
+          value += config.stonePrice
+        } else {
+          value += result.stonesObtained
+        }
+      } else {
+        value += result.stonesObtained
+      }
+    })
+    return value
+  })
+  
+  // 平均价值
+  const averageValue = computed(() => {
+    if (totalSpins.value === 0) return 0
+    return Math.round(totalValue.value / totalSpins.value)
+  })
+  
+  // 评价
+  const gachaRating = computed(() => {
+    if (totalSpins.value === 0) return { title: '未抽奖', emoji: '🎲', color: 'text-gray-400' }
+    
+    // 计算欧气值（总价值 / 理论最大值）
+    const theoreticalMax = totalSpins.value * 600 // 假设每次都抽到传说
+    const luckRatio = totalValue.value / theoreticalMax
+    
+    if (luckRatio > 0.5) return { title: '超级大欧皇', emoji: '👑', color: 'text-yellow-400' }
+    if (luckRatio > 0.3) return { title: '欧皇', emoji: '✨', color: 'text-purple-400' }
+    if (luckRatio > 0.15) return { title: '普通人', emoji: '😐', color: 'text-blue-400' }
+    if (luckRatio > 0.05) return { title: '非酋', emoji: '😭', color: 'text-orange-400' }
+    return { title: '超级大非酋', emoji: '💀', color: 'text-red-400' }
+  })
+  
+  // 最值钱的 Top 5
+  const top5Items = computed(() => {
+    const items = gachaHistory.value
+      .filter(r => r.item.rarity !== 'Common')
+      .map(result => {
+        const config = RARITY_CONFIG[result.item.rarity]
+        const value = result.isDuplicate ? result.stonesObtained : config.stonePrice
+        return {
+          ...result.item,
+          value,
+          isDuplicate: result.isDuplicate
+        }
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5)
+    
+    return items
+  })
 
   // 辅助函数：随机数生成
   function getRandomFloat(min: number, max: number): number {
@@ -203,12 +266,42 @@ export const useUserStore = defineStore('user', () => {
     return true
   }
 
+  // 兑换码兑换
+  function redeemCode(code: string): { success: boolean; message: string; reward?: { spins: number } } {
+    const normalizedCode = code.trim()
+    
+    // 检查兑换码
+    if (normalizedCode === '主任真帅') {
+      // 增加抽奖次数（可重复领取）
+      const rewardSpins = 100
+      spinsRemaining.value += rewardSpins
+      
+      // 记录兑换次数
+      if (!redeemedCodes.value[normalizedCode]) {
+        redeemedCodes.value[normalizedCode] = 0
+      }
+      redeemedCodes.value[normalizedCode]++
+      
+      return {
+        success: true,
+        message: `兑换成功！获得 ${rewardSpins} 次抽奖机会！`,
+        reward: { spins: rewardSpins }
+      }
+    }
+    
+    return {
+      success: false,
+      message: '无效的兑换码'
+    }
+  }
+
   // 重置状态
   function reset() {
     spinsRemaining.value = 60
     prismaticStones.value = 0
     inventory.value = []
     gachaHistory.value = []
+    redeemedCodes.value = {}
   }
 
   return {
@@ -217,14 +310,23 @@ export const useUserStore = defineStore('user', () => {
     prismaticStones,
     inventory,
     gachaHistory,
+    redeemedCodes,
     maxSpins,
     hasSpinsRemaining,
+    
+    // 统计信息
+    totalSpins,
+    totalValue,
+    averageValue,
+    gachaRating,
+    top5Items,
     
     // 方法
     pullOnce,
     pullTenTimes,
     exchangeItem,
     ownsItem,
+    redeemCode,
     reset
   }
 })

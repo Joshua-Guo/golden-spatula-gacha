@@ -6,6 +6,8 @@ import PoolCard from './components/PoolCard.vue'
 import GachaMachine from './components/GachaMachine.vue'
 import ResultModal from './components/ResultModal.vue'
 import ShopModal from './components/ShopModal.vue'
+import CDKeyModal from './components/CDKeyModal.vue'
+import GachaStats from './components/GachaStats.vue'
 import type { GachaResult } from './types'
 
 const userStore = useUserStore()
@@ -14,6 +16,8 @@ const userStore = useUserStore()
 const selectedPoolId = ref<string | null>(null)
 const showResultModal = ref(false)
 const showShopModal = ref(false)
+const showCDKeyModal = ref(false)
+const showStatsModal = ref(false)
 const currentResults = ref<GachaResult[]>([])
 
 // 当前选中的卡池
@@ -44,14 +48,34 @@ function showResult(results: GachaResult[]) {
         </div>
 
         <!-- 状态信息 -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <!-- 统计按钮 -->
+          <button
+            @click="showStatsModal = true"
+            class="flex items-center gap-2 rounded-full bg-gradient-to-r from-green-600 to-green-500 px-4 py-2 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-green-500/50"
+            title="查看统计"
+          >
+            <span>📊</span>
+            <span class="hidden sm:inline">统计</span>
+          </button>
+
+          <!-- 兑换码按钮 -->
+          <button
+            @click="showCDKeyModal = true"
+            class="flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-600 to-pink-500 px-4 py-2 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-pink-500/50"
+            title="兑换码"
+          >
+            <span>🎁</span>
+            <span class="hidden sm:inline">兑换码</span>
+          </button>
+
           <!-- 剩余抽数 -->
           <div class="flex items-center gap-2 rounded-full bg-yellow-600/20 px-4 py-2">
             <span class="text-xl">🎰</span>
             <div>
               <div class="text-xs text-gray-400">剩余抽数</div>
               <div class="text-lg font-bold text-yellow-400">
-                {{ userStore.spinsRemaining }} / {{ userStore.maxSpins }}
+                {{ userStore.spinsRemaining }}
               </div>
             </div>
           </div>
@@ -140,6 +164,18 @@ function showResult(results: GachaResult[]) {
     <ShopModal
       :show="showShopModal"
       @close="showShopModal = false"
+    />
+
+    <!-- 兑换码弹窗 -->
+    <CDKeyModal
+      :show="showCDKeyModal"
+      @close="showCDKeyModal = false"
+    />
+
+    <!-- 统计弹窗 -->
+    <GachaStats
+      :show="showStatsModal"
+      @close="showStatsModal = false"
     />
   </div>
 </template>

@@ -104,6 +104,26 @@ const availableGrouped = computed(() => getItemsByRarity(availableItems.value))
             <div class="text-sm text-blue-300">棱彩兑换石</div>
           </div>
 
+          <!-- 统计摘要 -->
+          <div class="mb-6 grid grid-cols-2 gap-3">
+            <div class="rounded-xl bg-purple-600/20 p-3 text-center">
+              <div class="text-xl font-bold text-purple-400">{{ userStore.totalSpins }}</div>
+              <div class="text-xs text-purple-300">已抽奖</div>
+            </div>
+            <div class="rounded-xl bg-green-600/20 p-3 text-center">
+              <div class="text-xl font-bold text-green-400">{{ userStore.averageValue }}</div>
+              <div class="text-xs text-green-300">平均价值</div>
+            </div>
+          </div>
+
+          <!-- 评价 -->
+          <div class="mb-6 rounded-xl border border-yellow-600/30 bg-yellow-600/10 p-4 text-center">
+            <div class="text-2xl">{{ userStore.gachaRating.emoji }}</div>
+            <div class="font-bold" :class="userStore.gachaRating.color">
+              {{ userStore.gachaRating.title }}
+            </div>
+          </div>
+
           <!-- 已拥有 -->
           <div class="mb-6">
             <h3 class="mb-3 text-lg font-bold text-green-400">
