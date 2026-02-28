@@ -1,3 +1,5 @@
-[build]
-command = "npm install --legacy-peer-deps && npm run build"
-publish = "dist"
+name = "golden-spatula-gacha"
+compatibility_date = "2024-01-01"
+
+[assets]
+directory = "./dist"
