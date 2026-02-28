@@ -91,9 +91,6 @@ export const useUserStore = defineStore('user', () => {
     if (luckRatio >= 0.02) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
     return { title: '超级大非酋', emoji: '💀', color: 'text-red-600' }
   })
-    if (luckRatio >= 0.05) return { title: '超级非酋', emoji: '💔', color: 'text-red-400' }
-    return { title: '超级大非酋', emoji: '💀', color: 'text-red-600' }
-  })
   
   // 最值钱的 Top 5
   const top5Items = computed(() => {
@@ -349,8 +346,8 @@ export const useUserStore = defineStore('user', () => {
     inventory,
     gachaHistory,
     redeemedCodes,
-    pityCounter, // 保底计数器
-    lifetimeSpins, // 历史总抽奖次数
+    pityCounter,
+    lifetimeSpins,
     maxSpins,
     hasSpinsRemaining,
     
@@ -367,6 +364,6 @@ export const useUserStore = defineStore('user', () => {
     exchangeItem,
     ownsItem,
     redeemCode,
-    reset
+    reset,
   }
 })
