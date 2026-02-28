@@ -128,11 +128,25 @@ function showResult(results: GachaResult[]) {
         <div class="rounded-2xl border border-yellow-600/30 bg-yellow-600/10 p-6">
           <h3 class="mb-3 text-lg font-bold text-yellow-400">📋 游戏规则</h3>
           <ul class="space-y-2 text-sm text-gray-300">
-            <li>• 每个用户最多只能抽 <span class="font-bold text-yellow-400">60 次</span></li>
+            <li>• 每个用户初始可抽 <span class="font-bold text-yellow-400">100 次</span></li>
             <li>• 抽到重复物品会自动转化为 <span class="font-bold text-blue-400">棱彩兑换石</span></li>
             <li>• 石头可以在背包中兑换未拥有的物品</li>
             <li>• 稀有度越高，转化的石头越多</li>
           </ul>
+        </div>
+
+        <!-- 兑换码提示 -->
+        <div class="rounded-2xl border-2 border-pink-600/30 bg-gradient-to-r from-pink-600/10 to-purple-600/10 p-6 text-center">
+          <h3 class="mb-2 text-xl font-bold text-pink-400">🎁 想要更多抽奖次数？</h3>
+          <p class="text-gray-300 mb-3">
+            在顶部点击 <span class="text-pink-400 font-bold">"兑换码"</span> 按钮，输入：
+          </p>
+          <div class="text-2xl font-bold text-yellow-400 bg-slate-800/50 rounded-lg py-3 px-6 inline-block">
+            主任真帅
+          </div>
+          <p class="text-sm text-gray-400 mt-3">
+            ✅ 可获得 <span class="text-green-400 font-bold">+100 抽</span>（可重复领取）
+          </p>
         </div>
       </div>
 

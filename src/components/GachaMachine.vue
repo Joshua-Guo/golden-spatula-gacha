@@ -195,8 +195,18 @@ async function spinTen(isAuto = false) {
 
       <!-- 提示信息 -->
       <div v-if="!userStore.hasSpinsRemaining" class="mt-6 text-center">
-        <p class="text-red-400 font-bold">⚠️ 抽奖次数已用完</p>
-        <p class="text-sm text-gray-400 mt-1">每个用户最多只能抽 60 次</p>
+        <div class="rounded-2xl border-2 border-pink-600/30 bg-gradient-to-r from-pink-600/10 to-purple-600/10 p-6">
+          <p class="text-pink-400 font-bold text-lg mb-2">⚠️ 抽奖次数已用完</p>
+          <p class="text-gray-300 mb-4">
+            想要继续抽奖？在顶部点击 <span class="text-pink-400 font-bold">"兑换码"</span> 按钮
+          </p>
+          <div class="text-xl font-bold text-yellow-400 bg-slate-800/50 rounded-lg py-2 px-4 inline-block mb-3">
+            输入：主任真帅
+          </div>
+          <p class="text-sm text-green-400">
+            ✅ 可获得 <span class="font-bold">+100 抽</span>（可重复领取）
+          </p>
+        </div>
       </div>
     </div>
   </div>

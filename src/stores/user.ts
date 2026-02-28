@@ -24,7 +24,7 @@ NON_COMMON_ITEMS.forEach(item => {
 
 export const useUserStore = defineStore('user', () => {
   // 状态
-  const spinsRemaining = ref<number>(60)
+  const spinsRemaining = ref<number>(100)
   const prismaticStones = ref<number>(0)
   const inventory = ref<string[]>([]) // 已拥有的物品 ID
   const gachaHistory = ref<GachaResult[]>([])
@@ -33,7 +33,7 @@ export const useUserStore = defineStore('user', () => {
   const lifetimeSpins = ref<number>(0) // 历史总抽奖次数（永久累积）
 
   // 计算属性
-  const maxSpins = computed(() => 60)
+  const maxSpins = computed(() => 100)
   const hasSpinsRemaining = computed(() => spinsRemaining.value > 0)
 
   // 统计信息
@@ -340,7 +340,7 @@ export const useUserStore = defineStore('user', () => {
 
   // 重置状态（不重置历史统计）
   function reset() {
-    spinsRemaining.value = 60
+    spinsRemaining.value = 100
     prismaticStones.value = 0
     inventory.value = []
     gachaHistory.value = []
